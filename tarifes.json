@@ -1,4 +1,4 @@
-const CONFIG_TARIFES = {
+{
   "MONEDA": "€",
   "T6_DIURNA": {
     "PREU_KM": 0.82,
@@ -14,4 +14,4 @@ const CONFIG_TARIFES = {
     "MES_DE_4_PASSATGERS": 4.60,
     "ACCES_AEROPORT": 4.60
   }
-};
+}
