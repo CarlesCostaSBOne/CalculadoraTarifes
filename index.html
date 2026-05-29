@@ -3,138 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Tarifes per Quilòmetre</title>
+    <title>Calculadora de Tarifes - Taxi Catalunya</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --success-bg: #f0fdf4;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
         }
-        .container {
-            background-color: white;
+
+        .calc-card {
+            background-color: var(--bg-card);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 400px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            max-width: 480px;
             width: 100%;
         }
+
         h2 {
-            margin-top: 0;
-            color: #2c3e50;
+            margin: 0 0 8px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
             text-align: center;
+            color: var(--text-main);
         }
-        .tarife-info {
-            background-color: #eef2f5;
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        /* Selector de Tarifes estil App Moderna */
+        .tarifa-selector {
+            display: flex;
+            background-color: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tarifa-option {
+            flex: 1;
+            text-align: center;
             padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
             border-radius: 6px;
-            font-size: 0.9em;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .tarifa-option.active {
+            background-color: var(--bg-card);
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Camps de formulari */
+        .input-group {
             margin-bottom: 20px;
         }
+
         label {
-            font-weight: bold;
             display: block;
-            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
         }
+
+        .input-wrapper {
+            position: relative;
+        }
+
         input[type="number"] {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
+            padding: 12px 40px 12px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-main);
+            background-color: #fff;
+            transition: border-color 0.2s;
         }
-        button {
-            width: 100%;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 6px;
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Suplements */
+        .suplements-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 20px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .checkbox-row:last-of-type {
+            border-bottom: none;
+            margin-bottom: 24px;
+        }
+
+        .checkbox-label-text {
+            font-size: 0.95rem;
+        }
+        .checkbox-subtext {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        /* Switch tipus iOS/Android */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
             cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 24px;
         }
-        button:hover {
-            background-color: #2980b9;
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
         }
-        .resultat {
-            margin-top: 25px;
-            padding: 15px;
-            background-color: #d4edda;
-            color: #155724;
-            border-radius: 6px;
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Requadre Resultat Elegant */
+        .result-box {
+            background-color: var(--success-bg);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 20px;
+            border-radius: 12px;
             text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            display: none;
+            margin-top: 10px;
+        }
+
+        .result-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--success);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-price {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #065f46;
+            margin: 0;
+        }
+
+        .result-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Calculadora de Ruta</h2>
+<div class="calc-card">
+    <h2>Calculadora de Taxi</h2>
+    <div class="subtitle">Tarifes oficials interurbanes de Catalunya</div>
     
-    <div class="tarife-info">
-        <strong>Tarifes actuals:</strong><br>
-        • Preu base: <span id="infoBase">...</span><br>
-        • Preu per quilòmetre: <span id="infoKm">...</span>
+    <div class="tarifa-selector">
+        <div id="tabT6" class="tarifa-option active" onclick="canviarTarifa('T6')">Diürna (T6)</div>
+        <div id="tabT7" class="tarifa-option" onclick="canviarTarifa('T7')">Nocturna / Festiva (T7)</div>
     </div>
 
-    <label for="km">Introdueix els quilòmetres:</label>
-    <input type="number" id="km" placeholder="Ex: 25" min="0" step="any">
+    <div class="input-group">
+        <label for="km">Distància del trajecte</label>
+        <div class="input-wrapper">
+            <input type="number" id="km" value="0" min="0" step="any" oninput="calcular()">
+            <span class="unit-label">km</span>
+        </div>
+    </div>
 
-    <button onclick="calcularPreu()">Calcular Preu</button>
+    <div class="input-group">
+        <label for="temps">Temps d'espera estimat</label>
+        <div class="input-wrapper">
+            <input type="number" id="temps" value="0" min="0" oninput="calcular()">
+            <span class="unit-label">min</span>
+        </div>
+    </div>
 
-    <div id="resultatBox" class="resultat"></div>
+    <div class="suplements-title">Suplements aplicables</div>
+    
+    <div class="checkbox-row">
+        <div>
+            <span class="checkbox-label-text">Més de 4 passatgers</span>
+            <span class="checkbox-subtext" id="preuSupPassatgers">(+0.00 €)</span>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="supPassatgers" onchange="calcular()">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="checkbox-row">
+        <div>
+            <span class="checkbox-label-text">Origen o Destí Aeroport</span>
+            <span class="checkbox-subtext" id="preuSupAeroport">(+0.00 €)</span>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="supAeroport" onchange="calcular()">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="result-box">
+        <div class="result-title">Preu estimat del trajecte</div>
+        <div class="result-price" id="total">0.00 €</div>
+        <div class="result-note">Els peatges d'autopista no estan inclosos en el càlcul.</div>
+    </div>
 </div>
 
 <script>
-    // Creem una variable global buida per guardar les tarifes quan les llegim
-    let tarifes = {};
+    // Variables globals per guardar les dades del fitxer JSON
+    let dadesTarifes = null;
+    let tarifaActual = 'T6'; // Per defecte comencem amb la T6
 
-    // Aquesta funció s'executa SOLA en obrir la pàgina per carregar el JSON
-    async function carregarTarifes() {
+    async function inicialitzar() {
         try {
-            // Anem a buscar el fitxer de configuració
+            // Llegim el fitxer de configuració local o remet
             const resposta = await fetch('tarifes.json');
-            tarifes = await resposta.json();
-
-            // Mostrem les tarifes dinàmicament al requadre informatiu d'HTML
-            document.getElementById('infoBase').innerText = tarifes.PREU_BASE.toFixed(2) + " " + tarifes.MONEDA;
-            document.getElementById('infoKm').innerText = tarifes.PREU_PER_KM.toFixed(2) + " " + tarifes.MONEDA + "/km";
+            dadesTarifes = await resposta.json();
+            
+            // Un cop tenim les dades, actualitzem els textos dels suplements de la interfície
+            document.getElementById('preuSupPassatgers').innerText = `(+${dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.PREU.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            document.getElementById('preuSupAeroport').innerText = `(+${dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.PREU.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            
+            // Fem el primer càlcul base
+            calcular();
         } catch (error) {
-            console.error("Error carregant les tarifes:", error);
-            alert("No s'ha pogut carregar el fitxer de tarifes.");
+            console.error("Error carregant les dades de configuració:", error);
         }
     }
 
-    // Cridem la funció per carregar les dades de l'arxiu JSON immediatament
-    carregarTarifes();
-
-    // La funció de càlcul (ara fa servir les dades del JSON que hem guardat a la variable)
-    function calcularPreu() {
-        const kmIntroduits = parseFloat(document.getElementById('km').value);
+    function canviarTarifa(tipus) {
+        tarifaActual = tipus;
         
-        if (isNaN(kmIntroduits) || kmIntroduits < 0) {
-            alert("Si us plau, introdueix un nombre de quilòmetres vàlid.");
-            return;
+        // Estil visual actiu a les pestanyes
+        document.getElementById('tabT6').classList.toggle('active', tipus === 'T6');
+        document.getElementById('tabT7').classList.toggle('active', tipus === 'T7');
+        
+        // Recalculem immediatament en canviar de tarifa
+        calcular();
+    }
+
+    function calcular() {
+        if (!dadesTarifes) return; // Si no s'ha carregat el JSON encara, no fem res
+
+        // Agafem els valors introduïts a la web
+        const km = parseFloat(document.getElementById('km').value) || 0;
+        const minutsEspera = parseFloat(document.getElementById('temps').value) || 0;
+        
+        // Triem el bloc de tarifes del JSON segons la pestanya seleccionada
+        const tarifa = tarifaActual === 'T6' ? dadesTarifes.T6_DIURNA : dadesTarifes.T7_NOCTURNA_FESTIVA;
+
+        // 1. Càlcul per quilometratge i hores d'espera (els minuts els dividim per 60 per passar-los a hores)
+        let costTrajecte = (km * tarifa.PREU_KM) + ((minutsEspera / 60) * tarifa.PREU_HORA_ESPERA);
+
+        // 2. Apliquem el mínim de percepció si el cost del recorregut no hi arriba
+        if (costTrajecte < tarifa.MINIM_PERCEPCIO) {
+            costTrajecte = tarifa.MINIM_PERCEPCIO;
         }
 
-        // Fem el càlcul utilitzant les dades del fitxer JSON
-        const preuTotal = tarifes.PREU_BASE + (kmIntroduits * tarifes.PREU_PER_KM);
+        // 3. Afegim els suplements seleccionats (acumulatius)
+        if (document.getElementById('supPassatgers').checked) {
+            costTrajecte += dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.PREU;
+        }
+        if (document.getElementById('supAeroport').checked) {
+            costTrajecte += dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.PREU;
+        }
 
-        const box = document.getElementById('resultatBox');
-        box.innerText = "Preu Total: " + preuTotal.toFixed(2) + " " + tarifes.MONEDA;
-        box.style.display = "block";
+        // 4. Pintem el preu final amb un format elegant i arrodonit
+        document.getElementById('total').innerText = `${costTrajecte.toFixed(2)} ${dadesTarifes.MONEDA}`;
     }
+
+    // Iniciem el procés de càrrega del JSON en obrir la pàgina
+    inicialitzar();
 </script>
 
 </body>
