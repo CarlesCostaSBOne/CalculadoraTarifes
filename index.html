@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Tarifes - Taxi Catalunya</title>
-    
-    <script src="tarifes.js"></script>
-
     <style>
         :root {
             --primary: #2563eb;
@@ -289,19 +286,23 @@
 </div>
 
 <script>
+    let dadesTarifes = null;
     let tarifaActual = 'T6';
 
-    function inicialitzar() {
-        // Comprovem si el fitxer tarifes.js s'ha carregat correctament
-        if (typeof CONFIG_TARIFES === 'undefined') {
-            alert("Error: No s'ha pogut trobar el fitxer 'tarifes.js' o conté un error. Asegura't que està a la mateixa carpeta.");
-            return;
+    async function inicialitzar() {
+        try {
+            // Des de GitHub Pages, això anirà a buscar el fitxer JSON real sense problemes
+            const resposta = await fetch('tarifes.json');
+            dadesTarifes = await resposta.json();
+            
+            document.getElementById('preuSupPassatgers').innerText = `(+${dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            document.getElementById('preuSupAeroport').innerText = `(+${dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            
+            calcular();
+        } catch (error) {
+            console.error("Error carregant les tarifes:", error);
+            alert("No s'han pogut carregar les tarifes des del fitxer json.");
         }
-        
-        // Llegim les dades del fitxer extern per posar els textos dels suplements
-        document.getElementById('preuSupPassatgers').innerText = `(+${CONFIG_TARIFES.SUPLEMENTS.MES_DE_4_PASSATGERS.toFixed(2)} ${CONFIG_TARIFES.MONEDA})`;
-        document.getElementById('preuSupAeroport').innerText = `(+${CONFIG_TARIFES.SUPLEMENTS.ACCES_AEROPORT.toFixed(2)} ${CONFIG_TARIFES.MONEDA})`;
-        calcular();
     }
 
     function canviarTarifa(tipus) {
@@ -312,34 +313,33 @@
     }
 
     function calcular() {
-        if (typeof CONFIG_TARIFES === 'undefined') return;
+        if (!dadesTarifes) return;
 
         const km = parseFloat(document.getElementById('km').value) || 0;
         const minutsEspera = parseFloat(document.getElementById('temps').value) || 0;
         
-        const tarifa = tarifaActual === 'T6' ? CONFIG_TARIFES.T6_DIURNA : CONFIG_TARIFES.T7_NOCTURNA_FESTIVA;
+        const BlackBoxTarifa = tarifaActual === 'T6' ? dadesTarifes.T6_DIURNA : dadesTarifes.T7_NOCTURNA_FESTIVA;
 
-        // Càlcul base (Km + Espera)
-        let costTrajecte = (km * tarifa.PREU_KM) + ((minutsEspera / 60) * tarifa.PREU_HORA_ESPERA);
+        // Càlcul base
+        let costTrajecte = (km * BlackBoxTarifa.PREU_KM) + ((minutsEspera / 60) * BlackBoxTarifa.PREU_HORA_ESPERA);
 
-        // Si es posen dades però no s'arriba al mínim, s'aplica el mínim de percepció
-        if ((km > 0 || minutsEspera > 0) && costTrajecte < tarifa.MINIM_PERCEPCIO) {
-            costTrajecte = tarifa.MINIM_PERCEPCIO;
+        // Mínim de percepció si s'introdueixen dades
+        if ((km > 0 || minutsEspera > 0) && costTrajecte < BlackBoxTarifa.MINIM_PERCEPCIO) {
+            costTrajecte = BlackBoxTarifa.MINIM_PERCEPCIO;
         }
 
-        // Afegim suplements si estan activats
+        // Suplements
         if (document.getElementById('supPassatgers').checked) {
-            costTrajecte += CONFIG_TARIFES.SUPLEMENTS.MES_DE_4_PASSATGERS;
+            costTrajecte += dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS;
         }
         if (document.getElementById('supAeroport').checked) {
-            costTrajecte += CONFIG_TARIFES.SUPLEMENTS.ACCES_AEROPORT;
+            costTrajecte += dadesTarifes.SUPLEMENTS.ACCES_AEROPORT;
         }
 
-        // Mostrem el total
-        document.getElementById('total').innerText = `${costTrajecte.toFixed(2)} ${CONFIG_TARIFES.MONEDA}`;
+        document.getElementById('total').innerText = `${costTrajecte.toFixed(2)} ${dadesTarifes.MONEDA}`;
     }
 
-    // Engeguem tot plegat
+    // Engeguem la càrrega inicial
     window.onload = inicialitzar;
 </script>
 
