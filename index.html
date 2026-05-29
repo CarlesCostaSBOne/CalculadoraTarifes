@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Tarifes - Taxi Catalunya</title>
+    
+    <!-- L'ÚNICA NOVETAT: Enllacem aquí el teu fitxer de configuració -->
+    <script src="tarifes.js"></script>
+
     <style>
         :root {
             --primary: #2563eb;
@@ -259,7 +263,7 @@
     <div class="checkbox-row">
         <div>
             <span class="checkbox-label-text">Més de 4 passatgers</span>
-            <span class="checkbox-subtext" id="preuSupPassatgers">(+4.60 €)</span>
+            <span class="checkbox-subtext" id="preuSupPassatgers">...</span>
         </div>
         <label class="switch">
             <input type="checkbox" id="supPassatgers" onchange="calcular()">
@@ -270,7 +274,7 @@
     <div class="checkbox-row">
         <div>
             <span class="checkbox-label-text">Origen o Destí Aeroport</span>
-            <span class="checkbox-subtext" id="preuSupAeroport">(+4.60 €)</span>
+            <span class="checkbox-subtext" id="preuSupAeroport">...</span>
         </div>
         <label class="switch">
             <input type="checkbox" id="supAeroport" onchange="calcular()">
@@ -280,32 +284,20 @@
 
     <div class="result-box">
         <div class="result-title">Preu estimat del trajecte</div>
-        <div class="result-price" id="total">7.25 €</div>
+        <div class="result-price" id="total">0.00 €</div>
         <div class="result-note">Els peatges d'autopista no estan inclosos en el càlcul.</div>
     </div>
 </div>
 
 <script>
-    // Guardem la configuració directament aquí dins (així funciona en local sense errors)
-    const dadesTarifes = {
-        "MONEDA": "€",
-        "T6_DIURNA": {
-            "PREU_KM": 0.82,
-            "PREU_HORA_ESPERA": 22.47,
-            "MINIM_PERCEPCIO": 7.25
-        },
-        "T7_NOCTURNA_FESTIVA": {
-            "PREU_KM": 0.89,
-            "PREU_HORA_ESPERA": 24.32,
-            "MINIM_PERCEPCIO": 7.90
-        },
-        "SUPLEMENTS": {
-            "MES_DE_4_PASSATGERS": 4.60,
-            "ACCES_AEROPORT": 4.60
-        }
-    };
-
     let tarifaActual = 'T6';
+
+    function inicialitzar() {
+        // Omplim dinàmicament els textos dels suplements usant el fitxer tarifes.js
+        document.getElementById('preuSupPassatgers').innerText = `(+${CONFIG_TARIFES.SUPLEMENTS.MES_DE_4_PASSATGERS.toFixed(2)} ${CONFIG_TARIFES.MONEDA})`;
+        document.getElementById('preuSupAeroport').innerText = `(+${CONFIG_TARIFES.SUPLEMENTS.ACCES_AEROPORT.toFixed(2)} ${CONFIG_TARIFES.MONEDA})`;
+        calcular();
+    }
 
     function canviarTarifa(tipus) {
         tarifaActual = tipus;
@@ -318,29 +310,30 @@
         const km = parseFloat(document.getElementById('km').value) || 0;
         const minutsEspera = parseFloat(document.getElementById('temps').value) || 0;
         
-        const tarifa = tarifaActual === 'T6' ? dadesTarifes.T6_DIURNA : dadesTarifes.T7_NOCTURNA_FESTIVA;
+        // Llegim la tarifa directament de la variable global del fitxer tarifes.js
+        const tarifa = tarifaActual === 'T6' ? CONFIG_TARIFES.T6_DIURNA : CONFIG_TARIFES.T7_NOCTURNA_FESTIVA;
 
         // Càlcul base
         let costTrajecte = (km * tarifa.PREU_KM) + ((minutsEspera / 60) * tarifa.PREU_HORA_ESPERA);
 
-        // Mínim de percepció (només si s'ha mogut el cotxe o s'ha posat temps, sinó comença amb el mínim base)
+        // Mínim de percepció
         if (costTrajecte < tarifa.MINIM_PERCEPCIO) {
             costTrajecte = tarifa.MINIM_PERCEPCIO;
         }
 
         // Suplements
         if (document.getElementById('supPassatgers').checked) {
-            costTrajecte += dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS;
+            costTrajecte += CONFIG_TARIFES.SUPLEMENTS.MES_DE_4_PASSATGERS;
         }
         if (document.getElementById('supAeroport').checked) {
-            costTrajecte += dadesTarifes.SUPLEMENTS.ACCES_AEROPORT;
+            costTrajecte += CONFIG_TARIFES.SUPLEMENTS.ACCES_AEROPORT;
         }
 
-        document.getElementById('total').innerText = `${costTrajecte.toFixed(2)} ${dadesTarifes.MONEDA}`;
+        document.getElementById('total').innerText = `${costTrajecte.toFixed(2)} ${CONFIG_TARIFES.MONEDA}`;
     }
 
-    // Calculem el mínim inicial en carregar la pàgina
-    calcular();
+    // Engeguem la configuració inicial
+    inicialitzar();
 </script>
 
 </body>
