@@ -294,8 +294,9 @@
             const resposta = await fetch('tarifes.json');
             dadesTarifes = await resposta.json();
             
-            document.getElementById('preuSupPassatgers').innerText = `(+${dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.PREU.toFixed(2)} ${dadesTarifes.MONEDA})`;
-            document.getElementById('preuSupAeroport').innerText = `(+${dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.PREU.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            // CORREGIT: Accedim correctament al preu directe del JSON
+            document.getElementById('preuSupPassatgers').innerText = `(+${dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            document.getElementById('preuSupAeroport').innerText = `(+${dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.toFixed(2)} ${dadesTarifes.MONEDA})`;
             
             calcular();
         } catch (error) {
@@ -319,24 +320,24 @@
         
         const tarifa = tarifaActual === 'T6' ? dadesTarifes.T6_DIURNA : dadesTarifes.T7_NOCTURNA_FESTIVA;
 
-        // 1. Calculem el cost variable pur segons distància i temps d'espera
+        // 1. Cost variable base (Km + Temps)
         let costVariable = (km * tarifa.PREU_KM) + ((minutsEspera / 60) * tarifa.PREU_HORA_ESPERA);
 
-        // 2. El preu base comença sent el cost variable, però SEMPRE garantim el Mínim de Percepció oficial
+        // 2. Si no arriba al mínim de percepció oficial, s'aplica el mínim
         let preuBaseTrajecte = costVariable;
         if (preuBaseTrajecte < tarifa.MINIM_PERCEPCIO) {
             preuBaseTrajecte = tarifa.MINIM_PERCEPCIO;
         }
 
-        // 3. Afegim els suplements al final (els suplements van a sobre del mínim de percepció)
+        // 3. CORREGIT: Sumem el valor numèric real directament del teu JSON
         if (document.getElementById('supPassatgers').checked) {
-            preuBaseTrajecte += dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.PREU;
+            preuBaseTrajecte += dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS;
         }
         if (document.getElementById('supAeroport').checked) {
-            preuBaseTrajecte += dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.PREU;
+            preuBaseTrajecte += dadesTarifes.SUPLEMENTS.ACCES_AEROPORT;
         }
 
-        // 4. Mostrem el preu actualitzat elegantment
+        // 4. Pintem el total actualitzat
         document.getElementById('total').innerText = `${preuBaseTrajecte.toFixed(2)} ${dadesTarifes.MONEDA}`;
     }
 
