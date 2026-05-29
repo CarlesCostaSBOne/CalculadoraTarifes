@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Tarifes - Taxi Catalunya</title>
     
-    <!-- L'ÚNICA NOVETAT: Enllacem aquí el teu fitxer de configuració -->
     <script src="tarifes.js"></script>
 
     <style>
@@ -293,7 +292,13 @@
     let tarifaActual = 'T6';
 
     function inicialitzar() {
-        // Omplim dinàmicament els textos dels suplements usant el fitxer tarifes.js
+        // Comprovem si el fitxer tarifes.js s'ha carregat correctament
+        if (typeof CONFIG_TARIFES === 'undefined') {
+            alert("Error: No s'ha pogut trobar el fitxer 'tarifes.js' o conté un error. Asegura't que està a la mateixa carpeta.");
+            return;
+        }
+        
+        // Llegim les dades del fitxer extern per posar els textos dels suplements
         document.getElementById('preuSupPassatgers').innerText = `(+${CONFIG_TARIFES.SUPLEMENTS.MES_DE_4_PASSATGERS.toFixed(2)} ${CONFIG_TARIFES.MONEDA})`;
         document.getElementById('preuSupAeroport').innerText = `(+${CONFIG_TARIFES.SUPLEMENTS.ACCES_AEROPORT.toFixed(2)} ${CONFIG_TARIFES.MONEDA})`;
         calcular();
@@ -307,21 +312,22 @@
     }
 
     function calcular() {
+        if (typeof CONFIG_TARIFES === 'undefined') return;
+
         const km = parseFloat(document.getElementById('km').value) || 0;
         const minutsEspera = parseFloat(document.getElementById('temps').value) || 0;
         
-        // Llegim la tarifa directament de la variable global del fitxer tarifes.js
         const tarifa = tarifaActual === 'T6' ? CONFIG_TARIFES.T6_DIURNA : CONFIG_TARIFES.T7_NOCTURNA_FESTIVA;
 
-        // Càlcul base
+        // Càlcul base (Km + Espera)
         let costTrajecte = (km * tarifa.PREU_KM) + ((minutsEspera / 60) * tarifa.PREU_HORA_ESPERA);
 
-        // Mínim de percepció
-        if (costTrajecte < tarifa.MINIM_PERCEPCIO) {
+        // Si es posen dades però no s'arriba al mínim, s'aplica el mínim de percepció
+        if ((km > 0 || minutsEspera > 0) && costTrajecte < tarifa.MINIM_PERCEPCIO) {
             costTrajecte = tarifa.MINIM_PERCEPCIO;
         }
 
-        // Suplements
+        // Afegim suplements si estan activats
         if (document.getElementById('supPassatgers').checked) {
             costTrajecte += CONFIG_TARIFES.SUPLEMENTS.MES_DE_4_PASSATGERS;
         }
@@ -329,11 +335,12 @@
             costTrajecte += CONFIG_TARIFES.SUPLEMENTS.ACCES_AEROPORT;
         }
 
+        // Mostrem el total
         document.getElementById('total').innerText = `${costTrajecte.toFixed(2)} ${CONFIG_TARIFES.MONEDA}`;
     }
 
-    // Engeguem la configuració inicial
-    inicialitzar();
+    // Engeguem tot plegat
+    window.onload = inicialitzar;
 </script>
 
 </body>
