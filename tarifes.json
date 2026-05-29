@@ -1,25 +1,17 @@
-{
+const CONFIG_TARIFES = {
   "MONEDA": "€",
   "T6_DIURNA": {
-    "NOM": "Tarifa T6 (Feiners, 8:00h a 20:00h)",
     "PREU_KM": 0.82,
     "PREU_HORA_ESPERA": 22.47,
     "MINIM_PERCEPCIO": 7.25
   },
   "T7_NOCTURNA_FESTIVA": {
-    "NOM": "Tarifa T7 (Nocturna 20:00h a 8:00h, Dissabtes i Festius)",
     "PREU_KM": 0.89,
     "PREU_HORA_ESPERA": 24.32,
     "MINIM_PERCEPCIO": 7.90
   },
   "SUPLEMENTS": {
-    "MES_DE_4_PASSATGERS": {
-      "NOM": "Més de 4 passatgers",
-      "PREU": 4.60
-    },
-    "ACCES_AEROPORT": {
-      "NOM": "Origen/Destí Aeroport",
-      "PREU": 4.60
-    }
+    "MES_DE_4_PASSATGERS": 4.60,
+    "ACCES_AEROPORT": 4.60
   }
-}
+};
