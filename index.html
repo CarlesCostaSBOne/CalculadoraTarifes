@@ -291,12 +291,11 @@
 
     async function inicialitzar() {
         try {
-            // Des de GitHub Pages, això anirà a buscar el fitxer JSON real sense problemes
             const resposta = await fetch('tarifes.json');
             dadesTarifes = await resposta.json();
             
-            document.getElementById('preuSupPassatgers').innerText = `(+${dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.toFixed(2)} ${dadesTarifes.MONEDA})`;
-            document.getElementById('preuSupAeroport').innerText = `(+${dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            document.getElementById('preuSupPassatgers').innerText = `(+${dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.PREU.toFixed(2)} ${dadesTarifes.MONEDA})`;
+            document.getElementById('preuSupAeroport').innerText = `(+${dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.PREU.toFixed(2)} ${dadesTarifes.MONEDA})`;
             
             calcular();
         } catch (error) {
@@ -318,28 +317,29 @@
         const km = parseFloat(document.getElementById('km').value) || 0;
         const minutsEspera = parseFloat(document.getElementById('temps').value) || 0;
         
-        const BlackBoxTarifa = tarifaActual === 'T6' ? dadesTarifes.T6_DIURNA : dadesTarifes.T7_NOCTURNA_FESTIVA;
+        const tarifa = tarifaActual === 'T6' ? dadesTarifes.T6_DIURNA : dadesTarifes.T7_NOCTURNA_FESTIVA;
 
-        // Càlcul base
-        let costTrajecte = (km * BlackBoxTarifa.PREU_KM) + ((minutsEspera / 60) * BlackBoxTarifa.PREU_HORA_ESPERA);
+        // 1. Calculem el cost variable pur segons distància i temps d'espera
+        let costVariable = (km * tarifa.PREU_KM) + ((minutsEspera / 60) * tarifa.PREU_HORA_ESPERA);
 
-        // Mínim de percepció si s'introdueixen dades
-        if ((km > 0 || minutsEspera > 0) && costTrajecte < BlackBoxTarifa.MINIM_PERCEPCIO) {
-            costTrajecte = BlackBoxTarifa.MINIM_PERCEPCIO;
+        // 2. El preu base comença sent el cost variable, però SEMPRE garantim el Mínim de Percepció oficial
+        let preuBaseTrajecte = costVariable;
+        if (preuBaseTrajecte < tarifa.MINIM_PERCEPCIO) {
+            preuBaseTrajecte = tarifa.MINIM_PERCEPCIO;
         }
 
-        // Suplements
+        // 3. Afegim els suplements al final (els suplements van a sobre del mínim de percepció)
         if (document.getElementById('supPassatgers').checked) {
-            costTrajecte += dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS;
+            preuBaseTrajecte += dadesTarifes.SUPLEMENTS.MES_DE_4_PASSATGERS.PREU;
         }
         if (document.getElementById('supAeroport').checked) {
-            costTrajecte += dadesTarifes.SUPLEMENTS.ACCES_AEROPORT;
+            preuBaseTrajecte += dadesTarifes.SUPLEMENTS.ACCES_AEROPORT.PREU;
         }
 
-        document.getElementById('total').innerText = `${costTrajecte.toFixed(2)} ${dadesTarifes.MONEDA}`;
+        // 4. Mostrem el preu actualitzat elegantment
+        document.getElementById('total').innerText = `${preuBaseTrajecte.toFixed(2)} ${dadesTarifes.MONEDA}`;
     }
 
-    // Engeguem la càrrega inicial
     window.onload = inicialitzar;
 </script>
 
