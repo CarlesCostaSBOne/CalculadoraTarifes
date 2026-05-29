@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Tarifes per Quilòmetre</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            text-align: center;
+        }
+        .tarife-info {
+            background-color: #eef2f5;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .resultat {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Calculadora de Ruta</h2>
+    
+    <div class="tarife-info">
+        <strong>Tarifes actuals:</strong><br>
+        • Preu base: <span id="infoBase">...</span><br>
+        • Preu per quilòmetre: <span id="infoKm">...</span>
+    </div>
+
+    <label for="km">Introdueix os quilòmetres:</label>
+    <input type="number" id="km" placeholder="Ex: 25" min="0" step="any">
+
+    <button onclick="calcularPreu()">Calcular Preu</button>
+
+    <div id="resultatBox" class="resultat"></div>
+</div>
+
+<script>
+    // Creem una variable global buida per guardar les tarifes quan les llegim
+    let tarifes = {};
+
+    // Aquesta funció s'executa SOLA en obrir la pàgina per carregar el JSON
+    async function carregarTarifes() {
+        try {
+            // Anem a buscar el fitxer de configuració
+            const resposta = await fetch('tarifes.json');
+            tarifes = await resposta.json();
+
+            // Mostrem les tarifes dinàmicament al requadre informatiu d'HTML
+            document.getElementById('infoBase').innerText = tarifes.PREU_BASE.toFixed(2) + " " + tarifes.MONEDA;
+            document.getElementById('infoKm').innerText = tarifes.PREU_PER_KM.toFixed(2) + " " + tarifes.MONEDA + "/km";
+        } catch (error) {
+            console.error("Error carregant les tarifes:", error);
+            alert("No s'ha pogut carregar el fitxer de tarifes.");
+        }
+    }
+
+    // Cridem la funció per carregar les dades de l'arxiu JSON immediatament
+    carregarTarifes();
+
+    // La funció de càlcul (ara fa servir les dades del JSON que hem guardat a la variable)
+    function calcularPreu() {
+        const kmIntroduits = parseFloat(document.getElementById('km').value);
+        
+        if (isNaN(kmIntroduits) || kmIntroduits < 0) {
+            alert("Si us plau, introdueix un nombre de quilòmetres vàlid.");
+            return;
+        }
+
+        // Fem el càlcul utilitzant les dades del fitxer JSON
+        const preuTotal = tarifes.PREU_BASE + (kmIntroduits * tarifes.PREU_PER_KM);
+
+        const box = document.getElementById('resultatBox');
+        box.innerText = "Preu Total: " + preuTotal.toFixed(2) + " " + tarifes.MONEDA;
+        box.style.display = "block";
+    }
+</script>
+
+</body>
+</html>
